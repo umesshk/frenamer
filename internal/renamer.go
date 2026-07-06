@@ -20,10 +20,21 @@ func RenameFiles() {
 
 		if !info.IsDir() {
 
+			var dirName string
+
+			splitPath := strings.Split(path, "/")
+
+			splitPath = splitPath[:len(splitPath)-1]
+
+			dirName = strings.Join(splitPath, "/")
+
 			new_name := Match(info.Name())
 
 			if new_name != "" {
-				new_file_path := fmt.Sprintf("sample/%s", new_name)
+
+				new_file_path := fmt.Sprintf("%s/%s", dirName, new_name)
+
+				fmt.Println(new_file_path)
 
 				fmt.Println("Executing Commands ... ")
 
