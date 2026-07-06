@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func RenameFiles() {
+func RenameFiles() error {
 
 	err := filepath.Walk("./sample", func(path string, info fs.FileInfo, err error) error {
 
@@ -53,9 +53,22 @@ func RenameFiles() {
 	})
 
 	if err != nil {
-		fmt.Println("some error occured ", err)
-
+		return err
 	}
+
+	fmt.Println("All Files are succefully renamed")
+
+	cmd := exec.Command("ls", "-R", "sample")
+
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(string(output))
+
+	return nil
 
 }
 

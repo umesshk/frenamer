@@ -1,10 +1,16 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/umesshk/frenamer/internal"
 )
 
 func main() {
-	internal.RenameFiles()
+	err := internal.RenameFiles()
+
+	if err != nil {
+		fmt.Println("Error Occured ", err)
+	}
 
 }
