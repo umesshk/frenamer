@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"github.com/umesshk/frenamer/internal"
+)
 
 func main() {
-	fmt.Println("Hello world")
+	internal.GetFile()
+
 }
