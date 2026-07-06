@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	internal.GetFile()
+	internal.RenameFiles()
 
 }

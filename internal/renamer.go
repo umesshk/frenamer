@@ -3,12 +3,13 @@ package internal
 import (
 	"fmt"
 	"io/fs"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
 
-func GetFile() {
+func RenameFiles() {
 
 	err := filepath.Walk("./sample", func(path string, info fs.FileInfo, err error) error {
 
@@ -18,10 +19,22 @@ func GetFile() {
 		}
 
 		if !info.IsDir() {
-			fmt.Println("File Name : ", info.Name())
+
 			new_name := Match(info.Name())
+
 			if new_name != "" {
-				fmt.Println("New File Name : ", new_name)
+				new_file_path := fmt.Sprintf("sample/%s", new_name)
+
+				fmt.Println("Executing Commands ... ")
+
+				cmd := exec.Command("mv", path, new_file_path)
+
+				err := cmd.Run()
+
+				if err != nil {
+					fmt.Println("Error Occured ", err)
+				}
+
 			}
 		}
 
