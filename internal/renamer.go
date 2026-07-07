@@ -16,13 +16,15 @@ type FiletoRename struct {
 
 type FileInfo struct {
 	FileName string
-	FilePath string
+	DirName  string
 }
 
 func RenameFiles() error {
 
 	var FileList []FiletoRename
 	var FilestoRename []FileInfo
+
+	FileMap := make(map[string]int)
 
 	err := filepath.Walk("./sample", func(path string, info fs.FileInfo, err error) error {
 
@@ -45,7 +47,8 @@ func RenameFiles() error {
 
 			if new_name != "" {
 
-				current_file := FileInfo{FileName: path, FilePath: dirName}
+				FileMap[dirName]++
+				current_file := FileInfo{FileName: path, DirName: dirName}
 				FilestoRename = append(FilestoRename, current_file)
 
 			}
@@ -60,10 +63,9 @@ func RenameFiles() error {
 
 	fmt.Println("Printing File...")
 
-	total_file_count := len(FilestoRename)
+	fmt.Println("File Maps : ", FileMap)
 
 	fmt.Println(FilestoRename)
-	fmt.Println(total_file_count)
 
 	for _, f := range FileList {
 		fmt.Printf("%s => %s ", f.OldPath, f.NewPath)
