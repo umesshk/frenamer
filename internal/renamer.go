@@ -3,13 +3,26 @@ package internal
 import (
 	"fmt"
 	"io/fs"
-	"os/exec"
+	_ "os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
 
+type FiletoRename struct {
+	OldPath string
+	NewPath string
+}
+
+type FileInfo struct {
+	FileName string
+	FilePath string
+}
+
 func RenameFiles() error {
+
+	var FileList []FiletoRename
+	var FilestoRename []FileInfo
 
 	err := filepath.Walk("./sample", func(path string, info fs.FileInfo, err error) error {
 
@@ -32,19 +45,8 @@ func RenameFiles() error {
 
 			if new_name != "" {
 
-				new_file_path := fmt.Sprintf("%s/%s", dirName, new_name)
-
-				fmt.Println(new_file_path)
-
-				fmt.Println("Executing Commands ... ")
-
-				cmd := exec.Command("mv", path, new_file_path)
-
-				err := cmd.Run()
-
-				if err != nil {
-					fmt.Println("Error Occured ", err)
-				}
+				current_file := FileInfo{FileName: path, FilePath: dirName}
+				FilestoRename = append(FilestoRename, current_file)
 
 			}
 		}
@@ -56,17 +58,18 @@ func RenameFiles() error {
 		return err
 	}
 
-	fmt.Println("All Files are succefully renamed")
+	fmt.Println("Printing File...")
 
-	cmd := exec.Command("ls", "-R", "sample")
+	total_file_count := len(FilestoRename)
 
-	output, err := cmd.CombinedOutput()
+	fmt.Println(FilestoRename)
+	fmt.Println(total_file_count)
 
-	if err != nil {
-		fmt.Println(err)
+	for _, f := range FileList {
+		fmt.Printf("%s => %s ", f.OldPath, f.NewPath)
 	}
 
-	fmt.Println(string(output))
+	fmt.Println("All Files are succefully renamed")
 
 	return nil
 
