@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	_ "os/exec"
 	"path/filepath"
 	"strconv"
@@ -15,8 +16,8 @@ type FiletoRename struct {
 }
 
 type FileInfo struct {
-	FileName string
 	DirName  string
+	FileName string
 }
 
 func RenameFiles() error {
@@ -24,7 +25,7 @@ func RenameFiles() error {
 	var FileList []FiletoRename
 	var FilestoRename []FileInfo
 
-	FileMap := make(map[string]int)
+	FileMap := make(map[string][]string)
 
 	err := filepath.Walk("./sample", func(path string, info fs.FileInfo, err error) error {
 
@@ -43,11 +44,11 @@ func RenameFiles() error {
 
 			dirName = strings.Join(splitPath, "/")
 
-			new_name := Match(info.Name())
+			new_name := Match(info.Name(), 0, 0)
 
 			if new_name != "" {
 
-				FileMap[dirName]++
+				FileMap[dirName] = append(FileMap[dirName], path)
 				current_file := FileInfo{FileName: path, DirName: dirName}
 				FilestoRename = append(FilestoRename, current_file)
 
@@ -63,12 +64,21 @@ func RenameFiles() error {
 
 	fmt.Println("Printing File...")
 
-	fmt.Println("File Maps : ", FileMap)
+	for _, list := range FileMap {
 
-	fmt.Println(FilestoRename)
+		count := len(list)
+
+		for i, filename := range list {
+			new_file_name := Match(filename, count, i+1)
+			FileList = append(FileList, FiletoRename{OldPath: filename, NewPath: new_file_name})
+		}
+
+	}
 
 	for _, f := range FileList {
-		fmt.Printf("%s => %s ", f.OldPath, f.NewPath)
+		fmt.Printf("%s => %s\n", f.OldPath, f.NewPath)
+		os.Rename(f.OldPath, f.NewPath)
+
 	}
 
 	fmt.Println("All Files are succefully renamed")
@@ -77,7 +87,7 @@ func RenameFiles() error {
 
 }
 
-func Match(fileName string) string {
+func Match(fileName string, count, index int) string {
 
 	Filetmp := strings.Split(fileName, ".")
 	ext := Filetmp[len(Filetmp)-1]
@@ -98,14 +108,14 @@ func Match(fileName string) string {
 
 	fileNumString := splitedFileName[len(splitedFileName)-1]
 
-	fileNum, err := strconv.Atoi(fileNumString)
+	_, err := strconv.Atoi(fileNumString)
 
 	if err != nil {
 		fmt.Printf("Inavlid File Format : %s\n", fileName)
 		return ""
 	}
 
-	newName := fmt.Sprintf("%s-%d of 4.%s", nameString, fileNum, ext)
+	newName := fmt.Sprintf("%s-%d of %d.%s", nameString, index, count, ext)
 
 	return newName
 }
