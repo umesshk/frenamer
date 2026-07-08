@@ -62,8 +62,6 @@ func RenameFiles() error {
 		return err
 	}
 
-	fmt.Println("Printing File...")
-
 	for _, list := range FileMap {
 
 		count := len(list)
@@ -76,12 +74,13 @@ func RenameFiles() error {
 	}
 
 	for _, f := range FileList {
+		fmt.Println("Renaming...")
 		fmt.Printf("%s => %s\n", f.OldPath, f.NewPath)
 		os.Rename(f.OldPath, f.NewPath)
 
 	}
 
-	fmt.Println("All Files are succefully renamed")
+	fmt.Println("All Files are succefully renamed...")
 
 	return nil
 
