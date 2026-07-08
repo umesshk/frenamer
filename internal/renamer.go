@@ -1,10 +1,10 @@
 package internal
 
 import (
+	"flag"
 	"fmt"
 	"io/fs"
 	"os"
-	_ "os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -21,6 +21,10 @@ type FileInfo struct {
 }
 
 func RenameFiles() error {
+	var rename bool
+
+	flag.BoolVar(&rename, "rename", false, "Pass the flag to actually rename the files")
+	flag.Parse()
 
 	var FileList []FiletoRename
 	var FilestoRename []FileInfo
@@ -38,17 +42,15 @@ func RenameFiles() error {
 
 			var dirName string
 
-			splitPath := strings.Split(path, "/")
+			dirName = filepath.Dir(path)
 
-			splitPath = splitPath[:len(splitPath)-1]
+			new_name := Match(info.Name())
 
-			dirName = strings.Join(splitPath, "/")
+			if new_name != nil {
 
-			new_name := Match(info.Name(), 0, 0)
+				key := fmt.Sprintf("%s/%s", dirName, new_name.Base)
 
-			if new_name != "" {
-
-				FileMap[dirName] = append(FileMap[dirName], path)
+				FileMap[key] = append(FileMap[key], path)
 				current_file := FileInfo{FileName: path, DirName: dirName}
 				FilestoRename = append(FilestoRename, current_file)
 
@@ -67,16 +69,29 @@ func RenameFiles() error {
 		count := len(list)
 
 		for i, filename := range list {
-			new_file_name := Match(filename, count, i+1)
+			nf := Match(filename)
+
+			new_file_name := fmt.Sprintf("%s-%d of %d.%s", nf.Base, i+1, count, nf.Ext)
+
 			FileList = append(FileList, FiletoRename{OldPath: filename, NewPath: new_file_name})
 		}
 
+	}
+	for v, f := range FileMap {
+		fmt.Printf("%s \n", v)
+		fmt.Println(f)
 	}
 
 	for _, f := range FileList {
 		fmt.Println("Renaming...")
 		fmt.Printf("%s => %s\n", f.OldPath, f.NewPath)
-		os.Rename(f.OldPath, f.NewPath)
+		if rename == true {
+			err := os.Rename(f.OldPath, f.NewPath)
+
+			if err != nil {
+				fmt.Printf("Error Renaming : %s to %s ", f.OldPath, f.NewPath)
+			}
+		}
 
 	}
 
@@ -86,7 +101,12 @@ func RenameFiles() error {
 
 }
 
-func Match(fileName string, count, index int) string {
+type FileMatch struct {
+	Base string
+	Ext  string
+}
+
+func Match(fileName string) *FileMatch {
 
 	Filetmp := strings.Split(fileName, ".")
 	ext := Filetmp[len(Filetmp)-1]
@@ -102,7 +122,7 @@ func Match(fileName string, count, index int) string {
 	nameString := strings.Join(nameStringSplit, "_")
 
 	if nameString == "" {
-		return ""
+		return nil
 	}
 
 	fileNumString := splitedFileName[len(splitedFileName)-1]
@@ -111,10 +131,8 @@ func Match(fileName string, count, index int) string {
 
 	if err != nil {
 		fmt.Printf("Inavlid File Format : %s\n", fileName)
-		return ""
+		return nil
 	}
 
-	newName := fmt.Sprintf("%s-%d of %d.%s", nameString, index, count, ext)
-
-	return newName
+	return &FileMatch{Base: nameString, Ext: ext}
 }
